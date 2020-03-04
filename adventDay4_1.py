@@ -5,7 +5,3 @@ print( len( list( filter(
         )
     )
 )
-
-
-
-
