@@ -37,8 +37,9 @@ def do(ptr):
     o, m = int(''.join(e[-2:])), [ int(c) for c in e[-3::-1] ]
     m = ((m + [0] * (nparams[o] - len(m))))
     p,d = mem[ptr + 1: ptr + nparams[o]],  mem[ptr + nparams[o]]
-    print(f"\n{i=}\n{e=}\n{o=}\n{m=}\n{p=}\n{d=}\n")
-    if (f := opselect(o)) is not None:
+    #print(f"\n{i=}\n{e=}\n{o=}\n{m=}\n{p=}\n{d=}\n")
+    f = opselect(0)
+    if f is not None:
         if f == "print":
             print(mem[mem[i + 1]])
         elif f == "halt":
