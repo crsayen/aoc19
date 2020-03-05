@@ -13,21 +13,23 @@ nparams = [3,3,3,1,1,2,2,3,3] + [0] * 99
 
 def jump_true(a):
     global i
-    print("jumped!")
     if a != 0:
         i = modeselect(m[-1])(d) - i
-        return "jump"
+    else:
+        i = 3
+    return "jump"
 
 def jump_false(a):
     global i
-    print("jumped!")
     if a == 0:
         i = modeselect(m[-1])(d) - i
-        return "jump"
+    else:
+        i = 3
+    return "jump"
 
 def inp():
     global mem
-    mem[255] = 1114
+    mem[225] = ID
     return None
 
 opselect = lambda op: {
@@ -45,17 +47,14 @@ opselect = lambda op: {
 def do(ptr):
     global i,m,d
     m=d=0
-    #print(mem[ptr: ptr + 10])
     e = str(mem[ptr])
     o, m = int(''.join(e[-2:])), [ int(c) for c in e[-3::-1] ]
     m = ((m + [0] * (nparams[o] - len(m))))
     p,d = mem[ptr + 1: ptr + nparams[o]],  mem[ptr + nparams[o]]
-    #print(f"\n{i=}\n{e=}\n{o=}\n{m=}\n{p=}\n{d=}\n")
     if (f := opselect(o)) is not None:
         if f == "print":
             print(modeselect(m[-1])(d))
         elif f == "halt":
-            #print(mem[0])
             sys.exit()
         else:
             if (r := f(*[ modeselect(_m)(p) for (_m,p) in zip(m, p) ])) == "jump":
