@@ -61,7 +61,7 @@ def do(ptr):
                 return i
             mem[d] = r
     return nparams[o] + 1
-   
+
 while True:
     i+= do(i)
 

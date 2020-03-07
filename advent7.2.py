@@ -1,6 +1,8 @@
 import sys
 from itertools import permutations
-from mem3 import mem
+#from mem3 import mem
+mem = [3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,
+27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5]
 #from instructions5_1 import mem
 HALT = False
 INPUTS = []
@@ -50,7 +52,7 @@ opselect = lambda op: {
 }.get(op)
 
 def do(ptr):
-    global i,m,d,OUT,HALT
+    global i,m,d,OUT,HALT,INPUTS
     print(f"\n{imem[ptr: ptr + 10]}")
     m=d=0
     e = str(imem[ptr])
@@ -62,6 +64,8 @@ def do(ptr):
     if (f := opselect(o)) is not None:
         if f == "output":
             OUT = modeselect(m[-1])(d)
+            #print(f"\n\n{OUT}\n\n")
+            INPUTS.append(OUT)
         elif f == "halt":
             HALT = True
             return 1
@@ -72,16 +76,29 @@ def do(ptr):
                 imem[d] = r
     return nparams[o] + 1
 
-for PERMUTATION in permutations([0,1,2,3,4]):
-    OUT = 0
-    for PHASE in PERMUTATION:
-        imem = mem.copy()
+
+#imem = mem.copy()
+
+
+for nperm, PERMUTATION in enumerate(list(permutations([5,6,7,8,9]))):
+    print(nperm)
+    i = 0
+    imem = mem.copy()
+    INPUTS = []
+    PHASES = list(PERMUTATION)
+    while len(PHASES):
+        INPUTS.append(PHASES.pop())
+        while not HALT:
+            i+= do(i)
+        HALT = False
+    print("done with some \n\n\n\n\n")
+    HALT = False
+    while 1:
         i = 0
         INPUTS = []
-        #print(f"{OUT=}")
-        INPUTS.append(OUT)
-        INPUTS.append(PHASE)
+        INPUTS.append(0)
         while not HALT:
+            #print(f"{OUT=}")
             i+= do(i)
         HALT = False
     MAXTHRUST = OUT if OUT > MAXTHRUST else MAXTHRUST
