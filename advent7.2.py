@@ -4,13 +4,16 @@ from itertools import permutations
 mem = [3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,
 27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5]
 #from instructions5_1 import mem
-HALT = False
+HALT, FEEDBACK = False, False
 INPUTS = []
 MAXTHRUST = 0
+IMEMS = [mem.copy()] * 5
+AMP = 0
+INIT = True
 i = e = o = m = p = d = OUT = 0
 
 modeselect = lambda m: {
-    0: lambda param: imem[param],
+    0: lambda param: IMEMS[AMP][param],
     1: lambda param: param
 }.get(m)
 
@@ -33,10 +36,13 @@ def jump_false(a):
     return "jump"
 
 def inp():
-    global imem, INPUTS
-    loc = imem[i + 1]
-    inp = INPUTS.pop()
-    imem[loc] = inp
+    global IMEMS, INPUTS, INIT
+    if INIT:
+        INIT = False
+        return None
+    loc = IMEMS[AMP][i + 1]
+    inp = INPUTS.pop(0)
+    IMEMS[AMP][loc] = inp
     return None
 
 opselect = lambda op: {
@@ -52,20 +58,21 @@ opselect = lambda op: {
 }.get(op)
 
 def do(ptr):
-    global i,m,d,OUT,HALT,INPUTS
-    print(f"\n{imem[ptr: ptr + 10]}")
+    global i,m,d,OUT,HALT,INPUTS, INIT
+    print(f"\n{IMEMS[AMP][ptr: ptr + 10]}")
     m=d=0
-    e = str(imem[ptr])
+    e = str(IMEMS[AMP][ptr])
     o, m = int(''.join(e[-2:])), [ int(c) for c in e[-3::-1] ]
     m = ((m + [0] * (nparams[o] - len(m))))
     if any(map(lambda x: x > 1, m)): o = 0
-    p,d = imem[ptr + 1: ptr + nparams[o]],  imem[ptr + nparams[o]]
+    p,d = IMEMS[AMP][ptr + 1: ptr + nparams[o]],  IMEMS[AMP][ptr + nparams[o]]
     print(f"\n{i=}\n{e=}\n{o=}\n{m=}\n{p=}\n{d=}\n{OUT=}\n{INPUTS=}\n")
     if (f := opselect(o)) is not None:
         if f == "output":
             OUT = modeselect(m[-1])(d)
             #print(f"\n\n{OUT}\n\n")
-            INPUTS.append(OUT)
+            if FEEDBACK:
+                INPUTS.append(OUT)
         elif f == "halt":
             HALT = True
             return 1
@@ -73,33 +80,43 @@ def do(ptr):
             if (r := f(*[ modeselect(_m)(p) for (_m,p) in zip(m, p) ])) == "jump":
                 return i
             if r is not None:
-                imem[d] = r
+                IMEMS[AMP][d] = r
     return nparams[o] + 1
 
 
-#imem = mem.copy()
+def incrAmp():
+    global AMP, INIT
+    AMP = AMP + 1 if AMP < 4 else 0
+
+def initAmp(phase):
+    if len(PHASES):
+        INPUTS = [phase]
+        i = 0
+        while INIT:
+            i += do(i)
+        return True
+    return False
 
 
 for nperm, PERMUTATION in enumerate(list(permutations([5,6,7,8,9]))):
     print(nperm)
     i = 0
-    imem = mem.copy()
+
     INPUTS = []
     PHASES = list(PERMUTATION)
-    while len(PHASES):
-        INPUTS.append(PHASES.pop())
-        while not HALT:
-            i+= do(i)
-        HALT = False
+    INPUTS.extend(PHASES)
+    while len(INPUTS):
+        i+= do(i)
+    FEEDBACK = True
+
     print("done with some \n\n\n\n\n")
-    HALT = False
+    INPUTS.append(0)
     while 1:
         i = 0
-        INPUTS = []
-        INPUTS.append(0)
         while not HALT:
             #print(f"{OUT=}")
             i+= do(i)
         HALT = False
+        #INPUTS.append(0)
     MAXTHRUST = OUT if OUT > MAXTHRUST else MAXTHRUST
 print(MAXTHRUST)
